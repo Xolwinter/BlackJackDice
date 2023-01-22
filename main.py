@@ -26,7 +26,7 @@ def start_game(n_player, n_round=10):
         player_type = input('Write 1 if this player is a human, 0 otherwise : ')
         while player_type != "1" and player_type != "0":
             player_type = input('A name cannot be blank. Write the name of the player : ')
-        players.append(Player(player_name))
+        players.append(Player(player_name, player_type))
 
     game = Game(n_round, players)
     game.infos()

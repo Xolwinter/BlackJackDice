@@ -1,6 +1,7 @@
 from random import randint
 from black_jack_MDP import BlackJack
 import algorithm as algo
+from random import randrange
 
 
 class Game:
@@ -40,45 +41,123 @@ class Game:
         mdp = BlackJack()
         res = set()
         reverse = algo.reverse_sort(mdp, 0, res)
-
-        for player in self.players:
-
-            if(player.type==0):       
-                print("mdp : ",mdp)
-                print("reverse : ", reverse)
-                optimal_actions = list()
-                b_i = algo.backward_induction(mdp, list(reverse))
-                for item in res:
-                    optimal_actions.append({'action':algo.optimal_action(item, mdp, b_i), 'state':item})
-            else:
-                print("Your turn to play ! Your current number of round won : " + player.victories)
-                player_move = input("Now select your next move between roll and stop !")
-                while(player_move != "stop"):
-                    if(player_move != "roll"):
-                        player_move = input("Please select an action between roll and stop !")
-                    else:
-                        player.score = roll_dice(player.score)
-                    
-                    
-                
-
+        optimal_actions = list()
+        b_i = algo.backward_induction(mdp, list(reverse))
+        for item in res:
+            optimal_actions.append({'action':algo.optimal_action(item, mdp, b_i), 'state':item})
 
         for round in range(self.round):
             
-            print('round '+self.round)
-            print()
+            print('round ',self.round)
+            
+            for player in self.players:
+                print("Turn of "+ player.name +" to play ! Your current number of round won : ", player.victories)
+                if(player.type=="0"):       
+                    
+                    
+                    player_move = player.move(player.score, optimal_actions)
+                    while(player_move != "stop"):
+                        if(player_move == None):
+                            player.score = -1
+                            player_move = "stop"
+                            break
+                        else:
+                            dice = roll_dice(player.score)
+                            if(player.score+dice > 21):
+                                print("You juste rolled a ", dice)
+                                print("Round failed")
+                                player.score = -1
+                                player_move = "stop"
+                                break
+                            player.score += dice
+                            print("You juste rolled a ", dice)
+                            print("Your score is now : ", player.score)
+                            player_move = player.move(player.score, optimal_actions)
+                        print(player_move)
+                    
+                else:
+                    
+                    player_move = input("Now select your next move between roll and stop : ")
+                    while(player_move != "stop"):
+                        if(player_move != "roll"):
+                            player_move = input("Please select an action between roll and stop : ")
+                        else:
+                            
+                            dice = roll_dice(player.score)
+                            if(player.score+dice > 21):
+                                print("You juste rolled a ", dice)
+                                print("Round failed")
+                                player.score = -1
+                                player_move = "stop"
+                                break
+                            player.score += dice
+                            print("You juste rolled a ", dice)
+                            print("Your score is now : ", player.score)
+                            player_move = input("Please select an action between roll and stop : ")
+            print("checkwin")
+            check_win(self)
+            self.round-=1 
+        winner = check_win_game(self)
+        if(winner != None):
+            print(winner)
+            print("End of the game, the winner is... " + str(winner[0]) + " ! With " + str(winner[1]) + " victories !") 
+        else:
+            print("End of the game, it is a draw !")  
 
 
-
-
-
-            self.round-=1
+        
     
-        return res
+        return 0
 
     
 def roll_dice(score):
     if(score<17):
-        return score + 10
+        randomNumber = randrange(2,12)
+        return randomNumber #Random number between 2 and 12
     else:
-        return score + 4
+        randomNumber = randrange(1,6)
+        return randomNumber #Random number between 1 and 6 
+
+
+def check_win(self):
+    if(len(self.players)==1):
+        if(self.players[0].score==-1):
+            self.players[0].update_victories(False)
+        else:
+            self.players[0].update_victories(True)
+    else:
+        if(self.players[0].score == 21 and self.players[1].score == 21):
+            self.players[0].update_victories(True)
+            self.players[1].update_victories(True)
+        elif(self.players[0].score == -1 and self.players[1].score == -1):
+            self.players[0].update_victories(False)
+            self.players[1].update_victories(False)
+        elif(self.players[0].score == -1 and self.players[1].score != -1):
+            self.players[0].update_victories(False)
+            self.players[1].update_victories(True)
+        elif(self.players[0].score != -1 and self.players[1].score == -1):
+            self.players[0].update_victories(True)
+            self.players[1].update_victories(False)
+        elif(self.players[0].score > self.players[1].score ):
+            self.players[0].update_victories(True)
+            self.players[1].update_victories(False)
+        elif(self.players[0].score < self.players[1].score):
+            self.players[0].update_victories(False)
+            self.players[1].update_victories(True)
+        elif(self.players[0].score == self.players[1].score):
+            self.players[0].update_victories(False)
+            self.players[1].update_victories(False)
+        else:
+            print("Case not existing")
+            print(self.players[0].score, self.players[1].score)
+
+def check_win_game(self):
+    if(len(self.players)==1):
+        return (self.players[0].name,self.players[0].victories) 
+    else:
+        if(self.players[0].victories > self.players[1].victories):
+            return (self.players[0].name,self.players[0].victories)
+        elif(self.players[0].victories == self.players[1].victories):
+            return None
+        else:
+            return (self.players[1].name,self.players[1].victories)
