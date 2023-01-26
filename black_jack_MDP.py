@@ -6,6 +6,10 @@ class BlackJack:
         
 
     def successors(self, state):
+        """
+            Desc : Return the successors of the different actions, depending on the state
+            Params : Current player score as state
+        """
         
         assert not self.is_terminal(state)
         roll_successors = self.roll_successors(state)
@@ -18,6 +22,10 @@ class BlackJack:
         return state==-1
 
     def stop_successors(self, state, max_score=21):
+        """
+            Desc : Return the successors if the move is 'stop'
+            Params : 
+        """
         
         assert 0 <= state <= max_score
         END_STATE = -1
@@ -38,14 +46,16 @@ class BlackJack:
 
         if(state<17):
 
+            rewards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             transitions = [1/11, 1/11, 1/11, 1/11, 1/11, 1/11, 1/11, 1/11, 1/11, 1/11, 1/11]
-            rewards = [2,3,4,5,6,7,8,9,10,11,12]
+            dices = [2,3,4,5,6,7,8,9,10,11,12]
 
         else:
+            rewards = [0, 0, 0, 0, 0, 0]
             transitions = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
-            rewards = [1,2,3,4,5,6]
+            dices = [1,2,3,4,5,6]
         
-        for dice in rewards:
+        for dice in dices:
             after_state = state + dice
             if(after_state>21):
                 after_state=-1
